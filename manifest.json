@@ -1,0 +1,43 @@
+{
+  "name": "Nota Kita",
+  "short_name": "Nota Kita",
+  "description": "Kasbon digital untuk komunitas. Offline-first, tanpa server, anti-curang.",
+  "start_url": "app.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f7f5",
+  "theme_color": "#5b21b6",
+  "orientation": "portrait",
+  "lang": "id",
+  "dir": "ltr",
+  "categories": ["finance", "utilities"],
+  "icons": [
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "app.html",
+      "accept": {
+        "application/json": [".json"]
+      }
+    }
+  ],
+  "share_target": {
+    "action": "app.html",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "file",
+          "accept": ["application/json", ".json"]
+        }
+      ]
+    }
+  }
+}

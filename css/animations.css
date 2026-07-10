@@ -1,0 +1,127 @@
+/* ============================================================
+   ANIMATIONS.CSS — Transitions, keyframes, micro-interactions
+   Nota Kita — Light editorial violet theme
+   ============================================================ */
+
+/* ---- Keyframes ---- */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-accent {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(91,33,182,0.35); }
+  50%       { box-shadow: 0 0 0 8px rgba(91,33,182,0); }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pop-in {
+  0%   { transform: scale(0.88); opacity: 0; }
+  70%  { transform: scale(1.03); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+@keyframes netting-burst {
+  0%   { transform: scale(1);   opacity: 1; }
+  50%  { transform: scale(1.4); opacity: 0.6; }
+  100% { transform: scale(1);   opacity: 0; }
+}
+
+/* ---- Screen transitions ---- */
+
+.screen.active {
+  animation: slide-up 0.22s var(--ease) both;
+}
+
+/* ---- Card entrance ---- */
+
+.position-card, .bill-item, .peer-item {
+  animation: slide-up 0.18s var(--ease) both;
+}
+
+/* Stagger */
+.position-card:nth-child(1) { animation-delay: 0ms; }
+.position-card:nth-child(2) { animation-delay: 35ms; }
+.position-card:nth-child(3) { animation-delay: 70ms; }
+.position-card:nth-child(4) { animation-delay: 105ms; }
+.position-card:nth-child(5) { animation-delay: 140ms; }
+
+/* ---- FAB pulse (draw attention on first run) ---- */
+
+.fab.pulse { animation: pulse-accent 1.5s ease-in-out 3; }
+
+/* ---- QR scan line ---- */
+
+.scan-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scan-sweep 2s ease-in-out infinite;
+}
+@keyframes scan-sweep {
+  0%   { top: 10%; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { top: 90%; opacity: 0; }
+}
+
+/* ---- Netting cleared animation ---- */
+
+.netting-burst-icon {
+  display: inline-block;
+  animation: netting-burst 0.6s var(--ease) forwards;
+}
+
+/* ---- Amount change pop ---- */
+
+.amount-pop { animation: pop-in 0.3s var(--ease) both; }
+
+/* ---- Detail status header entrance ---- */
+
+.detail-status-header { animation: slide-up 0.28s var(--ease) both; }
+
+/* ---- Wizard step transition ---- */
+
+.wizard-step.active { animation: fade-in 0.18s var(--ease) both; }
+
+/* ---- Skeleton loading ---- */
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface3) 25%, var(--bg2) 50%, var(--surface3) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-wave 1.2s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+@keyframes skeleton-wave {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---- Hover feedback (non-touch) ---- */
+
+@media (hover: hover) {
+  .btn:hover          { filter: brightness(0.93); }
+  .btn-primary:hover  { filter: brightness(1.08); }
+  .position-card:hover { box-shadow: var(--shadow-md); }
+  .bill-item:hover    { box-shadow: var(--shadow-md); }
+  .peer-item:hover    { box-shadow: var(--shadow-md); }
+}
+
+/* ---- Reduce motion ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' wss: https:; media-src 'self' blob:; worker-src 'self' blob:;">
+  <title>Nota Kita</title>
+  <meta name="description" content="Surat Utang Digital untuk Komunitas. Offline-first, tanpa server, anti-curang.">
+  <meta name="theme-color" content="#5b21b6">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-512.png">
+  <link rel="apple-touch-icon" href="icons/icon-512.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/nav.css">
+  <link rel="stylesheet" href="css/screens.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+  <!-- Screen flash (netting animation) -->
+  <div id="screen-flash"></div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Loading overlay -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loading-text">Memproses...</div>
+  </div>
+
+  <!-- Modal (bottom sheet) -->
+  <div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this)BG.dismissModal()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="modal-title"></div>
+      <div id="modal-body"></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="BG.dismissModal()">Batal</button>
+        <button class="btn btn-green" id="modal-confirm-btn" onclick="BG.confirmModal()">Ya, Lanjut</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tutorial -->
+  <div id="tutorial-backdrop" onclick="BG.dismissTutorial()"></div>
+  <div id="tutorial-tip">
+    <span id="tutorial-tip-text"></span>
+    <div class="tutorial-footer">
+      <span id="tutorial-counter"></span>
+      <button id="tutorial-btn" onclick="BG.nextTutorial()">Lanjut &#x2192;</button>
+    </div>
+  </div>
+
+  <!-- PWA Install Banner -->
+  <div id="pwa-banner">
+    <div class="pwa-text">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="vertical-align:middle;margin-right:6px">
+        <rect x="1" y="1" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M7 4v4M5 6l2 2 2-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Pasang Nota Kita di HP kamu!
+    </div>
+    <button class="btn btn-green btn-sm" style="min-height:36px;padding:6px 16px;width:auto;" onclick="BG.installPWA()">Pasang</button>
+    <button class="btn btn-outline btn-sm" style="min-height:36px;padding:6px 10px;width:auto;" onclick="BG.dismissPWABanner()">&times;</button>
+  </div>
+
+  <!-- SW update banner -->
+  <div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:400;background:var(--blue-dim);border-bottom:1px solid var(--blue);padding:10px 16px;text-align:center;font-size:0.85rem;cursor:pointer;" onclick="BG.applyUpdate()">
+    Versi baru tersedia. Ketuk untuk memperbarui.
+  </div>
+
+  <!-- ========== LOCK SCREEN ========== -->
+  <div id="screen-lock" style="position:fixed;inset:0;z-index:500;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;padding:24px;display:none;">
+    <div class="splash-mark" style="margin-bottom:24px;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <rect x="5" y="11" width="14" height="10" rx="2" stroke="#fff" stroke-width="1.8"/>
+        <path d="M8 11V7a4 4 0 018 0v4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="lock-msg" style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:8px;">Masukkan PIN untuk membuka</div>
+    <div id="lock-error-msg" style="display:none;color:var(--red);font-size:0.85rem;margin-bottom:8px;"></div>
+
+    <!-- Passkey mode -->
+    <div id="lock-mode-passkey" style="display:none;flex-direction:column;align-items:center;gap:16px;">
+      <button class="btn btn-primary btn-lg" style="min-width:220px;" onclick="BG.loginPasskey()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="margin-right:8px">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" stroke-width="1.7"/>
+          <circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="1.6"/>
+        </svg>
+        Buka dengan Sidik Jari
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="BG.loginPIN()" style="color:var(--text-dim);">Pakai PIN saja</button>
+    </div>
+
+    <!-- PIN numpad mode -->
+    <div id="lock-mode-pin" style="display:block;">
+      <!-- Dots -->
+      <div style="display:flex;gap:12px;margin-bottom:32px;justify-content:center;">
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+      </div>
+      <div id="pin-input-display" data-value="" style="display:none;"></div>
+      <!-- Numpad -->
+      <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px;" role="group" aria-label="Keypad PIN">
+        <button class="pin-key" onclick="BG.pinKeyPress('1')" aria-label="1">1</button>
+        <button class="pin-key" onclick="BG.pinKeyPress('2')" aria-label="2">2</button>
+        <button class="pin-key" onclick="BG.pinKeyPress('3')" aria-label="3">3</button>
+        <button class="pin-key" onclick="BG.pinKeyPress('4')" aria-label="4">4</button>
+        <button class="pin-key" onclick="BG.pinKeyPress('5')" aria-label="5">5</button>
+        <button class="pin-key" onclick="BG.pinKeyPress('6')" aria-label="6">6</button>
+        <button class="pin-key" onclick="BG.pinKeyPress('7')" aria-label="7">7</button>
+        <button class="pin-key" onclick="BG.pinKeyPress('8')" aria-label="8">8</button>
+        <button class="pin-key" onclick="BG.pinKeyPress('9')" aria-label="9">9</button>
+        <div></div>
+        <button class="pin-key" onclick="BG.pinKeyPress('0')" aria-label="0">0</button>
+        <button class="pin-key pin-key-action" onclick="BG.pinBackspace()" aria-label="Hapus digit terakhir">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M7 5H17a2 2 0 012 2v6a2 2 0 01-2 2H7l-5-5 5-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M12 8l-2 2 2 2M10 10h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:24px;width:100%;color:var(--text-dim);" onclick="BG.loginPasskey()">Pakai Sidik Jari</button>
+    </div>
+
+    <div style="margin-top:24px;">
+      <a href="#" style="font-size:0.82rem;color:var(--text-dimmer);" onclick="BG.navigateTo('screen-splash');return false;">Pulihkan dari backup</a>
+    </div>
+  </div>
+
+  <!-- ========== APP SHELL ========== -->
+  <div id="app">
+
+    <!-- ========== ONBOARDING ========== -->
+    <div id="onboarding" style="display:none;position:fixed;inset:0;background:var(--black);z-index:1000;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;">
+      <div class="onboarding-slide active" data-slide="0">
+        <div class="ob-emoji">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <rect x="6" y="4" width="28" height="32" rx="4" stroke="#00e676" stroke-width="2"/>
+            <path d="M13 14h14M13 20h14M13 26h9" stroke="#00e676" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="ob-title">Selamat Datang di Nota Kita</div>
+        <div class="ob-desc">Buat &amp; lacak surat utang antar anggota komunitas. Tanpa bank, tanpa internet, tanpa bisa dicurangi.</div>
+      </div>
+      <div class="onboarding-slide" data-slide="1">
+        <div class="ob-emoji">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <circle cx="14" cy="14" r="8" stroke="#00e676" stroke-width="2"/>
+            <circle cx="26" cy="26" r="8" stroke="#00e676" stroke-width="2"/>
+            <path d="M20 14h6M14 20v6" stroke="#00e676" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="ob-title">Berlaku untuk Uang &amp; Barang</div>
+        <div class="ob-desc">Kasbon Rupiah, Dollar, atau barang fisik seperti beras, pupuk, dan lainnya. Semua dicatat dalam satu tempat.</div>
+      </div>
+      <div class="onboarding-slide" data-slide="2">
+        <div class="ob-emoji">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <circle cx="10" cy="20" r="5" stroke="#00e676" stroke-width="2"/>
+            <circle cx="30" cy="10" r="5" stroke="#00e676" stroke-width="2"/>
+            <circle cx="30" cy="30" r="5" stroke="#00e676" stroke-width="2"/>
+            <path d="M15 19l10-7M15 21l10 7" stroke="#00e676" stroke-width="2" stroke-linecap="round"/>
+            <path d="M25 10l-10 8" stroke="#00e676" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3 2"/>
+          </svg>
+        </div>
+        <div class="ob-title">Hapus Silang Otomatis</div>
+        <div class="ob-desc">Kalau Kamu &rarr; A &rarr; B &rarr; Kamu, utang semua pihak bisa terhapus otomatis tanpa bayar uang!</div>
+      </div>
+      <div class="onboarding-slide" data-slide="3">
+        <div class="ob-emoji">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <rect x="10" y="4" width="20" height="24" rx="3" stroke="#00e676" stroke-width="2"/>
+            <path d="M16 15h8M16 20h5" stroke="#00e676" stroke-width="2" stroke-linecap="round"/>
+            <path d="M14 28h12v8H14z" stroke="#00e676" stroke-width="2" rx="2"/>
+            <circle cx="20" cy="32" r="2" fill="#00e676"/>
+          </svg>
+        </div>
+        <div class="ob-title">Aman &amp; Privat</div>
+        <div class="ob-desc">Identitas dijaga kriptografi. Data tersimpan di HP kamu, bukan di server orang lain.</div>
+      </div>
+      <div class="ob-dots">
+        <div class="ob-dot active"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div>
+      </div>
+      <button id="ob-next" class="btn btn-green btn-lg" style="margin-top:24px;max-width:320px;" onclick="BG.nextOnboarding()">Lanjut &#x2192;</button>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="BG.skipOnboarding()">Lewati</button>
+    </div>
+
+    <!-- ========== SCREEN: SETUP (step wizard) ========== -->
+    <section id="screen-splash" class="screen active">
+      <div class="setup-scroll">
+
+        <!-- Logo mark -->
+        <div class="splash-mark">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="2" width="18" height="20" rx="3" stroke="#fff" stroke-width="1.8"/>
+            <path d="M7 8h10M7 12h10M7 16h6" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div class="setup-form" id="setup-form">
+
+          <!-- Progress -->
+          <div class="setup-progress" id="setup-progress">
+            <div class="setup-progress-bar active" id="spb-1"></div>
+            <div class="setup-progress-bar" id="spb-2"></div>
+          </div>
+
+          <!-- Step 1: Nama -->
+          <div class="setup-step active" id="setup-step-1">
+            <div class="setup-step-label">Langkah 1 dari 2</div>
+            <div class="setup-step-title">Siapa nama<br>kamu?</div>
+            <div class="form-group">
+              <input class="form-input" id="setup-name" type="text" placeholder="mis. Pak Budi" maxlength="40" autocomplete="name" style="font-size:1rem;">
+              <div class="form-hint">Nama ini terlihat oleh anggota kelompok kamu.</div>
+            </div>
+            <button class="btn btn-primary btn-lg" onclick="BG.setupNextStep()">
+              Lanjut
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-left:4px">
+                <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Step 2: Nama Kelompok -->
+          <div class="setup-step" id="setup-step-2">
+            <div class="setup-step-label">Langkah 2 dari 2</div>
+            <div class="setup-step-title">Nama<br>kelompok kamu?</div>
+            <div class="form-group">
+              <input class="form-input" id="setup-circle-name" type="text" placeholder="mis. Warga RT 05" maxlength="40" style="font-size:1rem;">
+              <div class="form-hint">Nama arisan, RT, atau komunitas. Bisa diubah nanti.</div>
+            </div>
+            <button class="btn btn-primary btn-lg" onclick="BG.finishSetup()">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="margin-right:6px">
+                <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M5 7.5l2 2 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Mulai Sekarang
+            </button>
+            <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="BG.setupPrevStep()">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:4px">
+                <path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Kembali
+            </button>
+          </div>
+
+          <!-- Recover backup (always visible below steps) -->
+          <div style="margin-top:20px;text-align:center;">
+            <button style="background:none;border:none;color:var(--text-dim);font-size:0.8rem;cursor:pointer;text-decoration:underline;" onclick="BG.showImportKeyModal()">Pulihkan dari backup</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SCREEN: HOME (Beranda) ========== -->
+    <section id="screen-home" class="screen">
+      <div class="screen-header">
+        <div style="flex:1;">
+          <div class="text-sm text-dim" id="home-circle-name">Nota Kita</div>
+          <div style="font-size:1.1rem;font-weight:700;" id="home-user-name">Selamat datang</div>
+        </div>
+        <div class="online-dot" id="online-dot" title="Status koneksi P2P"></div>
+        <button class="btn-icon" onclick="BG.navigateTo('screen-circle')" title="Kelompok" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="15" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M2 18c0-3.5 2.7-5.5 6-5.5M10 18c0-3.5 2.7-5.5 6-5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Netting badge -->
+      <div id="home-netting-badge" style="display:none;margin:12px 16px 0;padding:10px 14px;background:var(--amber-dim);border:1px solid rgba(217,119,6,0.25);border-radius:12px;color:var(--amber);font-size:0.85rem;font-weight:700;"></div>
+
+      <!-- Pending actions -->
+      <div id="home-pending" style="margin:12px 16px 0;"></div>
+
+      <!-- Net positions -->
+      <div class="screen-body" style="padding-top:12px;">
+        <div id="home-positions"></div>
+        <!-- Empty state -->
+        <div id="home-empty" class="empty-state" style="display:none;">
+          <div class="empty-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <rect x="8" y="6" width="32" height="36" rx="4" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+              <path d="M16 18h16M16 24h16M16 30h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+            </svg>
+          </div>
+          <div class="empty-title">Belum ada nota</div>
+          <div class="empty-desc">Ketuk tombol + di bawah untuk membuat nota pertamamu.</div>
+          <button class="btn btn-green" style="margin-top:8px;" onclick="BG.navigateTo('screen-buat-nota')">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle;margin-right:5px">
+              <path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            Buat Nota Pertama
+          </button>
+        </div>
+        <!-- Recent activity -->
+        <div id="home-recent-wrap" style="margin-top:8px;">
+          <div class="setting-section-title">Aktivitas Terbaru</div>
+          <div id="home-recent"></div>
+        </div>
+      </div>
+
+      <!-- FAB -->
+      <button class="fab" id="fab-buat" onclick="BG.navigateTo('screen-buat-nota')" title="Buat Nota Baru">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M11 4v14M4 11h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </section>
+
+    <!-- ========== SCREEN: BUAT NOTA (step wizard) ========== -->
+    <section id="screen-buat-nota" class="screen">
+
+      <!-- Wizard header -->
+      <div class="wizard-nav">
+        <button class="wizard-back" id="wizard-back-btn" onclick="BG.wizardPrev()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M9 2L5 7l4 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Kembali
+        </button>
+        <div class="wizard-title">Buat Nota</div>
+        <div class="wizard-step-count" id="wizard-step-count">1 / 4</div>
+      </div>
+
+      <div class="screen-body">
+        <!-- Progress -->
+        <div class="wizard-progress" id="wizard-progress">
+          <div class="wizard-progress-dot active" id="wp-1"></div>
+          <div class="wizard-progress-dot" id="wp-2"></div>
+          <div class="wizard-progress-dot" id="wp-3"></div>
+          <div class="wizard-progress-dot" id="wp-4"></div>
+        </div>
+
+        <!-- Step 1: Siapa yang berhutang? -->
+        <div class="wizard-step active" id="wizard-step-1">
+          <div class="wizard-label">Langkah 1</div>
+          <div class="wizard-question">Siapa yang<br>berhutang?</div>
+          <div class="form-group">
+            <label class="form-label">Pilih anggota</label>
+            <select class="form-select" id="nota-debtor" style="font-size:1rem;">
+              <option value="">-- Pilih Anggota --</option>
+            </select>
+            <div class="form-hint">Orang yang menerima barang/uang dan wajib membayar kembali.</div>
+          </div>
+          <button class="btn btn-primary btn-lg" onclick="BG.wizardNext()">
+            Lanjut
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-left:4px">
+              <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Step 2: Berapa? -->
+        <div class="wizard-step" id="wizard-step-2">
+          <div class="wizard-label">Langkah 2</div>
+          <div class="wizard-question">Berapa<br>nominalnya?</div>
+
+          <!-- Jenis toggle -->
+          <div class="form-group">
+            <label class="form-label">Jenis</label>
+            <div class="asset-toggle">
+              <button class="asset-toggle-btn active" id="btn-type-fiat" onclick="BG.setAssetType('FIAT')">Uang</button>
+              <button class="asset-toggle-btn" id="btn-type-commodity" onclick="BG.setAssetType('COMMODITY')">Barang</button>
+            </div>
+          </div>
+
+          <!-- Mata uang (FIAT) -->
+          <div class="form-group" id="group-currency">
+            <label class="form-label" for="nota-currency">Mata Uang</label>
+            <select class="form-select" id="nota-currency">
+              <option value="IDR">IDR (Rupiah)</option>
+              <option value="USD">USD (Dollar)</option>
+              <option value="MYR">MYR (Ringgit)</option>
+            </select>
+          </div>
+
+          <!-- Satuan barang (COMMODITY) -->
+          <div class="form-group" id="group-commodity" style="display:none;">
+            <div class="input-row">
+              <div>
+                <label class="form-label" for="nota-unit">Satuan</label>
+                <select class="form-select" id="nota-unit">
+                  <option value="KG">KG</option>
+                  <option value="Liter">Liter</option>
+                  <option value="Zak">Zak</option>
+                  <option value="Karung">Karung</option>
+                  <option value="Ton">Ton</option>
+                  <option value="Kwintal">Kwintal</option>
+                  <option value="Lembar">Lembar</option>
+                  <option value="Unit">Unit</option>
+                  <option value="Lusin">Lusin</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" for="nota-asset-name">Nama Barang</label>
+                <input class="form-input" id="nota-asset-name" type="text" placeholder="mis. Beras" maxlength="40">
+              </div>
+            </div>
+          </div>
+
+          <!-- Jumlah -->
+          <div class="form-group">
+            <label class="form-label" for="nota-amount">Jumlah</label>
+            <input class="form-input" id="nota-amount" type="text" inputmode="numeric" placeholder="0" oninput="BGUI.formatNominalInput(this)" style="font-size:1.3rem;font-weight:700;">
+            <div class="form-hint" id="nota-amount-hint">Masukkan jumlah Rupiah.</div>
+          </div>
+
+          <button class="btn btn-primary btn-lg" onclick="BG.wizardNext()">
+            Lanjut
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-left:4px">
+              <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Step 3: Detail & Tempo -->
+        <div class="wizard-step" id="wizard-step-3">
+          <div class="wizard-label">Langkah 3</div>
+          <div class="wizard-question">Keterangan<br>&amp; jatuh tempo?</div>
+
+          <div class="form-group">
+            <label class="form-label" for="nota-keterangan">Keterangan (opsional)</label>
+            <textarea class="form-textarea" id="nota-keterangan" placeholder="mis. Beras untuk hajatan, tempo 1 bulan" maxlength="200"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="nota-due">Jatuh Tempo (opsional)</label>
+            <input class="form-input" id="nota-due" type="date">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="nota-grace">Grace Period (hari)</label>
+            <input class="form-input" id="nota-grace" type="number" min="0" max="90" value="0" placeholder="0">
+            <div class="form-hint">Berapa hari toleransi setelah jatuh tempo.</div>
+          </div>
+
+          <button class="btn btn-primary btn-lg" onclick="BG.wizardNext()">
+            Lanjut
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-left:4px">
+              <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Step 4: Bunga & Konfirmasi -->
+        <div class="wizard-step" id="wizard-step-4">
+          <div class="wizard-label">Langkah 4</div>
+          <div class="wizard-question">Bunga &amp;<br>konfirmasi</div>
+
+          <!-- Bunga -->
+          <div class="form-group">
+            <label class="form-label">Jenis Bunga</label>
+            <div class="interest-toggle">
+              <button class="toggle-chip active" id="chip-no-interest" onclick="BG.setInterestMode('NONE')">Tanpa Bunga</button>
+              <button class="toggle-chip" id="chip-simple" onclick="BG.setInterestMode('SIMPLE')">Sederhana</button>
+              <button class="toggle-chip" id="chip-compound" onclick="BG.setInterestMode('COMPOUND')">Majemuk</button>
+            </div>
+            <div id="group-interest-rate" style="display:none;">
+              <div class="form-group">
+                <label class="form-label" for="nota-interest-rate">% per Bulan</label>
+                <input class="form-input" id="nota-interest-rate" type="number" min="0" max="100" step="0.1" placeholder="0">
+              </div>
+              <div class="form-hint" id="hint-interest-type"></div>
+            </div>
+          </div>
+
+          <!-- Penjamin -->
+          <div class="form-group">
+            <label class="form-label">Penjamin (opsional)</label>
+            <select class="form-select" id="nota-guarantor">
+              <option value="">-- Tidak Ada Penjamin --</option>
+            </select>
+            <div class="form-hint">Anggota yang menjamin bila debitur gagal bayar.</div>
+          </div>
+
+          <!-- Buat -->
+          <button class="btn btn-primary btn-lg" onclick="BG.buatNota()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right:6px">
+              <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M5 8h6M8 5v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Buat Nota &amp; Tampilkan QR
+          </button>
+          <div style="height:20px;"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========== SCREEN: TAMPIL QR ========== -->
+    <section id="screen-qr-show" class="screen" style="align-items:center;justify-content:center;gap:16px;padding:24px;">
+      <button class="btn-icon" style="position:absolute;top:calc(16px + env(safe-area-inset-top));left:16px;background:var(--bg2);border:1px solid var(--border);color:var(--text);width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;" onclick="history.back()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L6 8l4 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div style="font-size:1.1rem;font-weight:700;text-align:center;">Tunjukkan QR Ini</div>
+      <div class="qr-wrapper">
+        <canvas id="qr-show-canvas"></canvas>
+      </div>
+      <div id="qr-show-label" class="qr-show-label">Minta pihak lain untuk scan QR ini.</div>
+      <div style="display:flex;gap:10px;width:100%;max-width:320px;">
+        <button class="btn btn-outline" style="flex:1;" onclick="BG.shareCurrentQR()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:5px">
+            <circle cx="11" cy="3" r="2" stroke="currentColor" stroke-width="1.3"/>
+            <circle cx="3" cy="7" r="2" stroke="currentColor" stroke-width="1.3"/>
+            <circle cx="11" cy="11" r="2" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M5 6l4-2M5 8l4 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          Bagikan
+        </button>
+        <button class="btn btn-outline" style="flex:1;" onclick="history.back()">Selesai</button>
+      </div>
+    </section>
+
+    <!-- ========== SCREEN: SCAN QR ========== -->
+    <section id="screen-scan" class="screen" style="background:#000;position:relative;">
+      <button style="position:absolute;top:calc(16px + env(safe-area-inset-top));left:16px;z-index:10;background:rgba(0,0,0,0.5);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;" onclick="BG.stopScan()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L6 8l4 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div style="position:absolute;top:calc(16px + env(safe-area-inset-top));right:16px;z-index:10;">
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);" onclick="BG.toggleFlash()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M8 1L4 8h5l-3 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="scan-frame" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);width:min(75vw, 300px);height:min(75vw, 300px);">
+        <video id="scan-video" playsinline autoplay muted style="width:100%;height:100%;object-fit:cover;"></video>
+        <div class="scan-line"></div>
+        <!-- Corner guides -->
+        <div style="position:absolute;inset:0;pointer-events:none;">
+          <div style="position:absolute;top:0;left:0;width:24px;height:24px;border-top:3px solid var(--accent);border-left:3px solid var(--accent);border-radius:4px 0 0 0;"></div>
+          <div style="position:absolute;top:0;right:0;width:24px;height:24px;border-top:3px solid var(--accent);border-right:3px solid var(--accent);border-radius:0 4px 0 0;"></div>
+          <div style="position:absolute;bottom:0;left:0;width:24px;height:24px;border-bottom:3px solid var(--accent);border-left:3px solid var(--accent);border-radius:0 0 0 4px;"></div>
+          <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-bottom:3px solid var(--accent);border-right:3px solid var(--accent);border-radius:0 0 4px 0;"></div>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:calc(110px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:rgba(255,255,255,0.7);font-size:0.9rem;padding:0 24px;">
+        Arahkan kamera ke QR Nota
+      </div>
+      <div style="position:absolute;bottom:calc(64px + env(safe-area-inset-bottom));left:0;right:0;display:flex;justify-content:center;gap:12px;">
+        <button class="btn btn-outline btn-sm" style="background:rgba(0,0,0,0.5);color:#fff;border-color:rgba(255,255,255,0.3);" onclick="BG.importFromFile()">Dari File</button>
+      </div>
+    </section>
+
+    <!-- ========== SCREEN: BUKU SAKU ========== -->
+    <section id="screen-buku-saku" class="screen">
+      <div class="screen-header">
+        <div class="header-title">Buku Saku</div>
+        <button class="btn-icon" onclick="BG.navigateTo('screen-buku-besar')" title="Buku Besar" style="display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--bg2);border:1px solid var(--border-md);padding:6px 10px;border-radius:10px;cursor:pointer;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M4 4h6M4 7h6M4 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <span style="font-size:0.6rem;font-weight:700;color:var(--text-dim);line-height:1;">Buku Besar</span>
+        </button>
+      </div>
+      <div style="padding:8px 16px;">
+        <input class="form-input" id="buku-saku-filter" type="search" placeholder="&#x1F50D; Cari nama atau keterangan..." oninput="RenderLedger.filterBukuSaku(this.value, BG.getState())" style="min-height:40px;">
+      </div>
+      <!-- Filter chips -->
+      <div style="padding:0 16px 8px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;">
+        <button class="toggle-chip active" id="filter-all" onclick="BG.filterBukuSaku('all')">Semua</button>
+        <button class="toggle-chip" id="filter-active" onclick="BG.filterBukuSaku('active')">Aktif</button>
+        <button class="toggle-chip" id="filter-hutang" onclick="BG.filterBukuSaku('hutang')">Hutangku</button>
+        <button class="toggle-chip" id="filter-piutang" onclick="BG.filterBukuSaku('piutang')">Piutangku</button>
+        <button class="toggle-chip" id="filter-settled" onclick="BG.filterBukuSaku('settled')">Lunas</button>
+      </div>
+      <div class="screen-body" style="padding-top:0;">
+        <div id="buku-saku-list"></div>
+        <div id="buku-saku-empty" class="empty-state">
+          <div class="empty-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+              <rect x="6" y="4" width="28" height="32" rx="4" stroke="currentColor" stroke-width="2" opacity="0.25"/>
+              <path d="M12 14h16M12 20h16M12 26h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+            </svg>
+          </div>
+          <div class="empty-title">Belum ada nota</div>
+          <div class="empty-desc">Nota yang melibatkan kamu akan muncul di sini.</div>
+          <button class="btn btn-primary" style="margin-top:12px;" onclick="BG.navigateTo('screen-buat-nota')">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:middle;margin-right:5px"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Buat Nota Baru
+          </button>
+        </div>
+        <button id="buku-saku-load-more" class="btn btn-outline" style="width:100%;display:none;margin-top:8px;" onclick="RenderLedger.loadMoreBukuSaku(BG.getState())">Tampilkan lebih banyak...</button>
+      </div>
+    </section>
+
+    <!-- ========== SCREEN: BUKU BESAR ========== -->
+    <section id="screen-buku-besar" class="screen">
+      <div class="screen-header">
+        <button class="btn-icon" onclick="history.back()" aria-label="Kembali">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L6 8l4 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="header-title">Buku Besar</div>
+        <button onclick="BG.runManualNetting()" title="Hapus Silang" aria-label="Hapus Silang Utang" class="btn btn-sm btn-amber" style="min-height:34px;padding:5px 12px;">
+          &#x26A1; Hapus Silang
+        </button>
+      </div>
+      <div style="padding:8px 16px;">
+        <input class="form-input" id="buku-besar-filter" type="search" placeholder="&#x1F50D; Cari anggota, barang, keterangan..." oninput="RenderLedger.filterBukuBesar(this.value, BG.getState())" style="min-height:40px;">
+      </div>
+      <div class="screen-body" style="padding-top:0;">
+        <div id="buku-besar-list"></div>
+        <div id="buku-besar-empty" class="empty-state">
+          <div class="empty-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+              <rect x="6" y="4" width="28" height="32" rx="4" stroke="currentColor" stroke-width="2" opacity="0.25"/>
+              <path d="M12 14h16M12 20h16M12 26h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+            </svg>
+          </div>
+          <div class="empty-title">Buku Besar Kosong</div>
+          <div class="empty-desc">Semua nota dalam kelompok ini akan tampil di sini secara transparan.</div>
+        </div>
+        <button id="buku-besar-load-more" class="btn btn-outline" style="width:100%;display:none;margin-top:8px;" onclick="RenderLedger.loadMoreBukuBesar(BG.getState())">Tampilkan lebih banyak...</button>
+      </div>
+    </section>
+
+    <!-- ========== SCREEN: DETAIL NOTA ========== -->
+    <section id="screen-bill-detail" class="screen">
+      <div class="screen-header">
+        <button class="btn-icon" onclick="history.back()" aria-label="Kembali ke daftar nota">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L6 8l4 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="header-title">Detail Nota</div>
+        <button class="btn-icon" id="btn-detail-tts" title="Bacakan nota" aria-label="Bacakan nota ini" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 5.5h2l3-3v11l-3-3H3V5.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+            <path d="M11 4.5c1.5 1 1.5 5.5 0 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="screen-body" id="bill-detail-content"></div>
+    </section>
+
+    <!-- ========== SCREEN: SYNC / SINKRONISASI ========== -->
+    <section id="screen-sync" class="screen">
+      <div class="screen-header">
+        <div class="header-title">Sinkronisasi</div>
+        <div class="online-dot" id="online-dot-sync"></div>
+      </div>
+      <div class="screen-body">
+
+        <!-- Scan QR -->
+        <div class="setting-section-title">Terima Nota</div>
+        <div class="card" style="margin-bottom:12px;">
+          <button class="btn btn-primary btn-lg" onclick="BG.startScan()">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="margin-right:6px">
+              <rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="11" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="1" y="11" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M11 11h2v2h2v2M15 11h2M11 13v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Scan QR Nota
+          </button>
+          <div class="form-hint" style="margin-top:10px;text-align:center;">Scan QR dari nota orang lain, konfirmasi pelunasan, atau bergabung kelompok.</div>
+        </div>
+
+        <!-- Internet P2P -->
+        <div class="setting-section-title">Sinkron Otomatis (Internet)</div>
+        <div class="card" style="margin-bottom:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div>
+              <div style="font-weight:700;">P2P via Internet</div>
+              <div class="form-hint" id="rtc-status-text">Tidak aktif</div>
+            </div>
+            <button class="btn btn-sm" id="btn-rtc-toggle" onclick="BG.toggleRTC()" style="background:var(--bg2);border:1px solid var(--border-md);color:var(--text);min-width:80px;">Aktifkan</button>
+          </div>
+        </div>
+
+        <!-- WiFi lokal -->
+        <div class="setting-section-title">Sinkron Lokal (WiFi / Hotspot)</div>
+        <div class="card" style="margin-bottom:12px;">
+          <button class="btn btn-blue btn-lg" onclick="BG.startWiFiSync()">
+            <svg width="17" height="17" viewBox="0 0 17 17" fill="none" style="margin-right:6px">
+              <path d="M1 6c2-2.7 4.7-4 7.5-4S13 3.3 15 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M3.5 9c1.3-1.7 3-2.5 5-2.5s3.7.8 5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="8.5" cy="13" r="2" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            Sambung via WiFi Lokal
+          </button>
+          <div class="form-hint" style="margin-top:10px;text-align:center;">Gunakan ini bila tidak ada internet. HP perlu terhubung WiFi yang sama.</div>
+        </div>
+
+        <!-- Fountain offline QR -->
+        <div class="setting-section-title">Transfer Offline via QR Animasi</div>
+        <div class="card" style="margin-bottom:12px;display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:4px;">Kirim semua data ke HP lain tanpa internet. HP penerima scan QR bergerak sampai selesai.</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-outline" style="flex:1;" onclick="BG.startFountainSend()">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:5px">
+                <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M4 4h2l2-2 2 2h2M7 6v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              Kirim
+            </button>
+            <button class="btn btn-outline" style="flex:1;" onclick="BG.startFountainReceive()">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:5px">
+                <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M4 10h2l2 2 2-2h2M7 2v7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              Terima
+            </button>
+          </div>
+        </div>
+
+        <!-- Berbagi file -->
+        <div class="setting-section-title">Berbagi Data</div>
+        <div class="card" style="margin-bottom:12px;display:flex;flex-direction:column;gap:8px;">
+          <button class="btn btn-primary btn-lg" onclick="BG.shareAllBills()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right:6px">
+              <circle cx="12" cy="3" r="2" stroke="currentColor" stroke-width="1.3"/>
+              <circle cx="4" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/>
+              <circle cx="12" cy="13" r="2" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M6 7l4-3M6 9l4 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            Bagikan ke WA / Quick Share / BT
+          </button>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-outline" style="flex:1;" onclick="BG.exportBillsFile()">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="margin-right:4px">
+                <path d="M6.5 1v7M3.5 5l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M1 10h11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+              Simpan File
+            </button>
+            <button class="btn btn-outline" style="flex:1;" onclick="BG.importBillsFile()">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="margin-right:4px">
+                <path d="M6.5 8V1M3.5 4l3-3 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M1 10h11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+              Muat File
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========== SCREEN: FOUNTAIN QR ANIMASI ========== -->
+    <section id="screen-fountain" class="screen" style="align-items:center;justify-content:center;gap:16px;padding:24px;">
+      <button style="position:absolute;top:calc(16px + env(safe-area-inset-top));left:16px;background:var(--bg2);border:1px solid var(--border);color:var(--text);width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;" onclick="BG.stopFountainSend()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L6 8l4 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div style="font-size:1.05rem;font-weight:700;text-align:center;">Kirim via QR Animasi</div>
+      <div class="qr-wrapper">
+        <canvas id="fountain-canvas" width="260" height="260"></canvas>
+      </div>
+      <div id="fountain-status" style="font-size:0.85rem;color:var(--text-dim);text-align:center;min-height:20px;">Memulai...</div>
+      <div style="font-size:0.82rem;color:var(--text-dimmer);text-align:center;max-width:280px;">Minta penerima tekan "Terima via QR Animasi" dan scan QR ini secara berurutan sampai selesai.</div>
+      <button class="btn btn-outline" onclick="BG.stopFountainSend()">Selesai / Batal</button>
+    </section>
+
+
+    <section id="screen-circle" class="screen">
+      <div class="screen-header">
+        <button class="btn-icon" onclick="history.back()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L6 8l4 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="header-title">Kelompok</div>
+      </div>
+      <div class="screen-body">
+
+        <!-- Info kelompok -->
+        <div class="circle-card" id="circle-info-card">
+          <div class="circle-name" id="circle-display-name">Belum bergabung</div>
+          <div class="circle-meta" id="circle-display-meta"></div>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="BG.showCircleInviteQR()">QR Undangan</button>
+            <button class="btn btn-outline btn-sm" onclick="BG.copyCircleId()">Salin ID</button>
+          </div>
+        </div>
+
+        <!-- Bergabung via QR -->
+        <div class="setting-section-title">Bergabung Kelompok Lain</div>
+        <div class="card" style="margin-bottom:12px;">
+          <button class="btn btn-outline btn-lg" onclick="BG.startScanForCircle()">Scan QR Undangan</button>
+          <div class="form-hint" style="margin-top:8px;text-align:center;">Scan QR dari admin kelompok untuk bergabung.</div>
+        </div>
+
+        <!-- Anggota -->
+        <div class="setting-section-title">Anggota (<span id="peers-count">0</span>)</div>
+        <div id="peers-list"></div>
+        <div id="peers-empty" class="empty-state" style="display:none;">
+          <div class="empty-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+              <circle cx="16" cy="14" r="7" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+              <circle cx="28" cy="14" r="7" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+              <path d="M4 35c0-7 5.4-11 12-11M20 35c0-7 5.4-11 12-11" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+            </svg>
+          </div>
+          <div class="empty-title">Belum ada anggota lain</div>
+          <div class="empty-desc">Bagikan QR Undangan ke anggota baru.</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========== SCREEN: LAPORAN ========== -->
+    <section id="screen-reports" class="screen">
+      <div class="screen-header">
+        <button class="btn-icon" onclick="history.back()">&#x2190;</button>
+        <div class="header-title">Laporan</div>
+      </div>
+      <div class="screen-body">
+        <div class="report-month-nav">
+          <button class="btn-icon-round" onclick="RenderReports.prevMonth()">&#x2039;</button>
+          <div id="report-month-label" style="font-size:1rem;font-weight:600;"></div>
+          <button class="btn-icon-round" onclick="RenderReports.nextMonth()">&#x203A;</button>
+        </div>
+        <div class="report-stat-grid">
+          <div class="report-stat-card">
+            <div class="report-stat-value color-green" id="report-issued-count">0</div>
+            <div class="report-stat-label">Nota Diterbitkan</div>
+          </div>
+          <div class="report-stat-card">
+            <div class="report-stat-value color-green" id="report-settled-count">0</div>
+            <div class="report-stat-label">Lunas</div>
+          </div>
+          <div class="report-stat-card">
+            <div class="report-stat-value color-red" id="report-defaulted-count">0</div>
+            <div class="report-stat-label">Macet</div>
+          </div>
+          <div class="report-stat-card">
+            <div class="report-stat-value" id="report-circle-active">0</div>
+            <div class="report-stat-label">Nota Aktif</div>
+          </div>
+        </div>
+        <div class="setting-section-title">Rincian per Aset</div>
+        <div id="report-asset-breakdown" class="card" style="margin-bottom:12px;"></div>
+        <div class="setting-section-title">Riwayat Hapus Silang</div>
+        <div id="report-netting-log" class="card" style="margin-bottom:12px;"></div>
+      </div>
+    </section>
+
+    <!-- ========== SCREEN: PENGATURAN ========== -->
+    <section id="screen-settings" class="screen">
+      <div class="screen-header">
+        <div class="header-title">Pengaturan</div>
+      </div>
+      <div class="screen-body">
+
+        <!-- Identitas -->
+        <div class="setting-section-title">Identitas Saya</div>
+        <div class="setting-group">
+          <div class="setting-row tappable" onclick="BG.editName()">
+            <div class="setting-label">Nama</div>
+            <div class="setting-value" id="setting-name">-</div>
+            <div class="setting-arrow">›</div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Kunci Publik</div>
+            <div class="setting-value text-xs" id="setting-pubkey" style="font-family:monospace;">-</div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Kelompok</div>
+            <div class="setting-value" id="setting-circle-name">-</div>
+          </div>
+        </div>
+
+        <!-- Keamanan -->
+        <div class="setting-section-title">Keamanan</div>
+        <div class="setting-group">
+          <div class="setting-row tappable" onclick="BG.exportKeyWithPassword()">
+            <div style="flex:1;">
+              <div class="setting-label">Backup Kunci</div>
+              <div class="form-hint" style="margin:2px 0 0;">PENTING: simpan file ini baik-baik!</div>
+            </div>
+            <div class="setting-arrow">›</div>
+          </div>
+          <div class="setting-row tappable" onclick="BG.showImportKeyModal()">
+            <div class="setting-label">Pulihkan dari Backup</div>
+            <div class="setting-arrow">›</div>
+          </div>
+          <div class="setting-row tappable" onclick="BG.setupPIN()">
+            <div style="flex:1;">
+              <div class="setting-label">Kunci PIN</div>
+              <div class="form-hint" style="margin:2px 0 0;" id="setting-pin-status">Belum diaktifkan</div>
+            </div>
+            <div class="setting-arrow">›</div>
+          </div>
+          <div class="setting-row tappable" id="row-passkey" onclick="BG.registerPasskey()">
+            <div style="flex:1;">
+              <div class="setting-label">Sidik Jari / Wajah (Passkey)</div>
+              <div class="form-hint" style="margin:2px 0 0;" id="setting-passkey-status">Belum didaftarkan</div>
+            </div>
+            <div class="setting-arrow">›</div>
+          </div>
+        </div>
+
+        <!-- Data -->
+        <div class="setting-section-title">Data</div>
+        <div class="setting-group">
+          <div class="setting-row">
+            <div class="setting-label">Jumlah Nota</div>
+            <div class="setting-value" id="setting-bill-count">-</div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Penyimpanan Terpakai</div>
+            <div class="setting-value" id="setting-storage">-</div>
+          </div>
+          <div class="setting-row tappable" onclick="BGTutorial.reset()">
+            <div class="setting-label">Tampilkan Tutorial Lagi</div>
+            <div class="setting-arrow">›</div>
+          </div>
+        </div>
+
+        <!-- Harga Komoditas (Admin) -->
+        <div class="setting-section-title">Harga Komoditas (Admin)</div>
+        <div class="setting-group">
+          <div class="setting-row tappable" onclick="BG.showOraclePriceModal()">
+            <div class="setting-label">Update Harga Barang</div>
+            <div class="setting-arrow">›</div>
+          </div>
+        </div>
+
+        <!-- Arsip & Tutup Buku -->
+        <div class="setting-section-title">Arsip &amp; Tutup Buku</div>
+        <div class="setting-group">
+          <div class="setting-row tappable" onclick="BG.tutupBuku()">
+            <div style="flex:1;">
+              <div class="setting-label">Tutup Buku Tahunan</div>
+              <div class="form-hint" style="margin:2px 0 0;">Arsipkan semua nota aktif. File backup diekspor otomatis.</div>
+            </div>
+            <div class="setting-arrow">›</div>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="setting-section-title">Zona Bahaya</div>
+        <div class="setting-group">
+          <div class="setting-row tappable" onclick="BG.confirmResetAll()">
+            <div class="setting-label" style="color:var(--red);">Hapus Semua Data</div>
+            <div class="setting-arrow" style="color:var(--red);">›</div>
+          </div>
+        </div>
+
+        <div style="text-align:center;margin-top:24px;color:var(--text-dimmer);font-size:0.75rem;">
+          Nota Kita &bull; v1.5.0<br>
+          Offline-first &bull; P2P &bull; Kriptografi secp256k1 (Nostr)
+        </div>
+        <div style="height:20px;"></div>
+      </div>
+    </section>
+
+    <!-- ========== BOTTOM NAV ========== -->
+    <nav id="bottom-nav" style="display:none;">
+      <button class="bnav-tab active" id="bnav-home" onclick="BG.bnavGo('screen-home')">
+        <span class="bnav-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M8 20v-7h6v7" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="bnav-label">Beranda</span>
+        <span class="bnav-badge" id="badge-home"></span>
+      </button>
+      <button class="bnav-tab" id="bnav-saku" onclick="BG.bnavGo('screen-buku-saku')">
+        <span class="bnav-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <rect x="3" y="2" width="16" height="18" rx="3" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M7 7h8M7 11h8M7 15h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="bnav-label">Buku Saku</span>
+        <span class="bnav-badge" id="badge-saku"></span>
+      </button>
+      <button class="bnav-tab" id="bnav-scan" onclick="BG.startScan()">
+        <span class="bnav-icon" style="background:var(--accent);color:#fff;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-10px;box-shadow:0 4px 16px rgba(91,33,182,0.4);">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="1" y="1" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="1.6"/>
+            <rect x="13" y="1" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="1.6"/>
+            <rect x="1" y="13" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M13 13h2v2h2v2M17 13h3M13 15v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="bnav-label">Scan</span>
+      </button>
+      <button class="bnav-tab" id="bnav-sync" onclick="BG.bnavGo('screen-sync')">
+        <span class="bnav-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M4 11a7 7 0 017-7 7 7 0 016.4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M18 11a7 7 0 01-7 7 7 7 0 01-6.4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M17.5 4.5L18 8l-3.5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4.5 17.5L4 14l3.5-.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="bnav-label">Sinkron</span>
+        <span class="bnav-badge" id="badge-sync"></span>
+      </button>
+      <button class="bnav-tab" id="bnav-settings" onclick="BG.bnavGo('screen-settings')">
+        <span class="bnav-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <circle cx="11" cy="11" r="3" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M11 2v2M11 18v2M2 11h2M18 11h2M4.22 4.22l1.42 1.42M16.36 16.36l1.42 1.42M4.22 17.78l1.42-1.42M16.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="bnav-label">Pengaturan</span>
+      </button>
+    </nav>
+
+  </div><!-- /#app -->
+
+  <!-- ========== JS MODULES ========== -->
+  <!-- secp256k1 (Nostr-compatible): ESM bridge loads first, exposes window.__nobleSecp256k1 -->
+  <script type="module" src="js/lib/noble-secp256k1-loader.js"></script>
+  <!-- Vendor -->
+  <script src="js/lib/qrcode.js"></script>
+  <script src="js/lib/jsQR.js"></script>
+  <script src="js/lib/trystero-nostr.js"></script>
+  <!-- Core: no DOM -->
+  <script src="js/core/crypto.js"></script>
+  <script src="js/core/encrypt.js"></script>
+  <script src="js/core/db.js"></script>
+  <script src="js/core/interest.js"></script>
+  <script src="js/core/note.js"></script>
+  <script src="js/core/endorse.js"></script>
+  <script src="js/core/netting.js"></script>
+  <script src="js/core/circle.js"></script>
+  <script src="js/core/reputation.js"></script>
+  <script src="js/core/oracle.js"></script>
+  <script src="js/core/merge.js"></script>
+  <script src="js/core/passkey.js"></script>
+  <!-- IO: network, file, QR -->
+  <script src="js/io/qr.js"></script>
+  <script src="js/io/fountain.js"></script>
+  <script src="js/io/share.js"></script>
+  <script src="js/io/backup.js"></script>
+  <script src="js/io/rtc.js"></script>
+  <!-- UI -->
+  <script src="js/ui/ui.js"></script>
+  <script src="js/ui/tutorial.js"></script>
+  <script src="js/ui/render/home.js"></script>
+  <script src="js/ui/render/ledger.js"></script>
+  <script src="js/ui/render/bills.js"></script>
+  <script src="js/ui/render/settings.js"></script>
+  <script src="js/ui/render/peers.js"></script>
+  <script src="js/ui/render/reports.js"></script>
+  <!-- Bootstrap -->
+  <script src="js/app.js"></script>
+  <script>
+    // Service Worker registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(function(reg) {
+        reg.addEventListener('updatefound', function() {
+          var newWorker = reg.installing;
+          newWorker.addEventListener('statechange', function() {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              document.getElementById('update-banner').style.display = 'block';
+              window._pendingSW = newWorker;
+            }
+          });
+        });
+      });
+    }
+    // Expose applyUpdate
+    if (!window.BG) window.BG = {};
+    window.BG.applyUpdate = function() {
+      if (window._pendingSW) { window._pendingSW.postMessage({ type: 'SKIP_WAITING' }); location.reload(); }
+    };
+  </script>
+
+</body>
+</html>

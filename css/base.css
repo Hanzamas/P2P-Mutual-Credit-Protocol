@@ -1,0 +1,135 @@
+/* ============================================================
+   BASE.CSS — Variables, Reset, Typography, Layout primitives
+   Nota Kita — Light editorial theme, violet accent
+   ============================================================ */
+
+:root {
+  /* ---- Background layers ---- */
+  --bg:           #f7f7f5;   /* warm off-white — main canvas */
+  --bg2:          #f0eeea;   /* slightly darker — section bg */
+  --surface:      #ffffff;   /* card / modal surface */
+  --surface2:     #f7f6f3;   /* elevated surface */
+  --surface3:     #eeece8;   /* input bg, chips */
+
+  /* ---- Border ---- */
+  --border:       rgba(0,0,0,0.08);
+  --border-md:    rgba(0,0,0,0.13);
+
+  /* ---- Text ---- */
+  --text:         #111111;
+  --text-dim:     rgba(17,17,17,0.5);
+  --text-dimmer:  rgba(17,17,17,0.32);
+
+  /* ---- Accent: violet ---- */
+  --accent:       #5b21b6;
+  --accent2:      #7c3aed;
+  --accent-dim:   rgba(91,33,182,0.08);
+  --accent-dim2:  rgba(91,33,182,0.14);
+
+  /* ---- Semantic colors ---- */
+  --green:        #059669;   /* piutang / credit / success — NOT BukuGembok bright green */
+  --green-dim:    rgba(5,150,105,0.1);
+  --red:          #dc2626;   /* hutang / debit / danger */
+  --red-dim:      rgba(220,38,38,0.1);
+  --amber:        #d97706;   /* pending / warning */
+  --amber-dim:    rgba(217,119,6,0.1);
+  --blue:         #2563eb;   /* info */
+  --blue-dim:     rgba(37,99,235,0.1);
+
+  /* ---- Status "lunas" bright indicator (the ONLY bright green allowed) ---- */
+  --green-bright: #00e676;
+
+  /* ---- Spacing ---- */
+  --spacing-xs:   4px;
+  --spacing-sm:   8px;
+  --spacing-md:   16px;
+  --spacing-lg:   24px;
+  --spacing-xl:   32px;
+
+  /* ---- Radius ---- */
+  --radius-sm:    8px;
+  --radius-md:    12px;
+  --radius-lg:    18px;
+  --radius-xl:    24px;
+  --radius-full:  999px;
+
+  /* ---- Letter-spacing ---- */
+  --ls-tight:     -0.03em;  /* headings, large amounts */
+  --ls-snug:      -0.02em;  /* subheadings */
+  --ls-normal:    0em;
+  --ls-wide:      0.06em;   /* labels, caps */
+  --ls-wider:     0.10em;   /* section titles */
+
+  /* ---- Typography ---- */
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'Courier New', monospace;
+
+  /* ---- Touch ---- */
+  --touch-min:    48px;
+
+  /* ---- Easing ---- */
+  --ease:         cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-fast:    cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---- Typography scale ---- */
+  --text-caption: 0.75rem;   /* labels, hints, meta — ONE token for all small text */
+
+  /* ---- Shadows ---- */
+  --shadow-sm:    0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:    0 4px 16px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-lg:    0 8px 32px rgba(0,0,0,0.12);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.scrollable {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* ---- Typography utilities ---- */
+.text-xl    { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+.text-lg    { font-size: 1.1rem; font-weight: 600; }
+.text-sm    { font-size: 0.85rem; }
+.text-xs    { font-size: 0.75rem; }
+.text-dim   { color: var(--text-dim); }
+.text-dimmer { color: var(--text-dimmer); }
+.text-center { text-align: center; }
+.text-green  { color: var(--green); }
+.text-red    { color: var(--red); }
+.color-green { color: var(--green); }
+.color-red   { color: var(--red); }
+.color-amber { color: var(--amber); }
+.color-accent { color: var(--accent); }
+.fw-700     { font-weight: 700; }
+
+/* ---- Spacing helpers ---- */
+.mt-3 { margin-top: 12px; }
+.mt-4 { margin-top: 16px; }
+.mb-4 { margin-bottom: 16px; }
+.p-4  { padding: 16px; }
+
+/* ---- Flex helpers ---- */
+.flex        { display: flex; }
+.flex-col    { flex-direction: column; }
+.flex-center { align-items: center; justify-content: center; }
+.gap-2       { gap: 8px; }
+.gap-3       { gap: 12px; }

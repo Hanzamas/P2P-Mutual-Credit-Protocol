@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nota Kita - Kasbon digital untuk komunitas</title>
+  <meta name="description" content="Buat surat utang digital antar warga. Gratis, offline, tidak bisa dimanipulasi.">
+  <meta name="theme-color" content="#fafaf8">
+  <link rel="icon" href="icons/icon-512.png">
+  <link rel="apple-touch-icon" href="icons/icon-512.png">
+  <meta property="og:title" content="Nota Kita">
+  <meta property="og:description" content="Kasbon digital untuk komunitas. Gratis, offline-first.">
+  <meta property="og:image" content="img/hero_community.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+
+:root {
+  --bg:       #fafaf8;
+  --bg2:      #f2f0ec;
+  --surface:  #ffffff;
+  --border:   rgba(0,0,0,0.09);
+  --text:     #111111;
+  --muted:    rgba(17,17,17,0.48);
+  --accent:   #5b21b6;
+  --accent2:  #7c3aed;
+  --accentbg: rgba(91,33,182,0.07);
+  --red:      #dc2626;
+  --font:     'Inter', system-ui, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+
+/* ---- NAV ---- */
+nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(250,250,248,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 62px;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text);
+}
+.nav-mark {
+  width: 28px; height: 28px; background: var(--accent); border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-mark svg { display: block; }
+.nav-cta {
+  background: var(--text); color: #fff;
+  font-size: 0.85rem; font-weight: 600;
+  padding: 9px 20px; border-radius: 8px;
+  transition: opacity .15s;
+}
+.nav-cta:hover { opacity: 0.8; }
+
+/* ---- HERO ---- */
+.hero {
+  max-width: 1200px; margin: 0 auto;
+  padding: 96px 40px 80px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 64px; align-items: center;
+}
+.hero-left {}
+.hero-kicker {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 24px;
+}
+.hero-kicker-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+h1 {
+  font-size: clamp(2.8rem, 5vw, 4.4rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+.hero-sub {
+  font-size: 1.05rem;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 400px;
+  margin-bottom: 36px;
+  font-weight: 400;
+}
+.hero-actions {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.btn-primary {
+  background: var(--accent); color: #fff;
+  font-weight: 700; font-size: 0.95rem;
+  padding: 13px 26px; border-radius: 9px;
+  transition: background .15s;
+}
+.btn-primary:hover { background: var(--accent2); }
+.btn-outline {
+  border: 1.5px solid var(--border); color: var(--text);
+  font-size: 0.95rem; font-weight: 500;
+  padding: 12px 24px; border-radius: 9px;
+  transition: border-color .15s;
+}
+.btn-outline:hover { border-color: rgba(0,0,0,0.25); }
+
+.hero-right {
+  position: relative;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.hero-phone {
+  width: 210px; border-radius: 22px; flex-shrink: 0;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
+}
+.hero-scene {
+  flex: 1; aspect-ratio: 3/4; object-fit: cover;
+  border-radius: 22px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.14);
+}
+
+/* ---- STRIP ---- */
+.strip {
+  background: var(--accent);
+  padding: 20px 40px;
+  display: flex; gap: 40px; justify-content: center; flex-wrap: wrap;
+  overflow: hidden;
+}
+.strip-item {
+  color: rgba(255,255,255,0.75); font-size: 0.82rem; font-weight: 600;
+  letter-spacing: 0.03em; white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+}
+.strip-item svg { opacity: 0.6; }
+
+/* ---- SECTION SHARED ---- */
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+
+section.pad { padding: 96px 0; }
+
+.section-label {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 14px;
+}
+.section-title {
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 800; letter-spacing: -0.03em;
+  line-height: 1.15; margin-bottom: 14px;
+}
+.section-body {
+  color: var(--muted); font-size: 1rem; line-height: 1.7; max-width: 480px;
+}
+
+/* ---- NETTING ---- */
+.netting-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 64px; align-items: center;
+  padding: 96px 0;
+}
+.netting-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px; margin-top: 32px;
+}
+.nc-row {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 10px; font-size: 0.88rem;
+}
+.nc-name {
+  background: var(--bg2); border-radius: 6px;
+  padding: 4px 12px; font-weight: 600; font-size: 0.82rem; color: var(--text);
+  white-space: nowrap;
+}
+.nc-amt { font-weight: 700; color: var(--red); font-size: 0.82rem; white-space: nowrap; }
+.nc-result {
+  background: rgba(91,33,182,0.07); border: 1px solid rgba(91,33,182,0.18);
+  border-radius: 10px; padding: 12px 16px; margin-top: 14px;
+  font-size: 0.85rem; font-weight: 700; color: var(--accent);
+  display: flex; align-items: center; gap: 8px;
+}
+.netting-img {
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+  width: 100%; aspect-ratio: 4/3; object-fit: cover;
+}
+
+/* ---- FEATURES ---- */
+.feat-header {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 48px; align-items: end; margin-bottom: 48px;
+}
+.fgrid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+  background: var(--border);
+  gap: 1px;
+}
+.fcell {
+  background: var(--surface); padding: 28px 24px;
+  transition: background .2s;
+}
+.fcell:hover { background: var(--bg); }
+.fcell-icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  background: var(--accentbg); border: 1px solid rgba(91,33,182,0.12);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+}
+.fcell-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+.fcell-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+/* ---- STEPS ---- */
+.steps-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 80px; align-items: center;
+}
+.steps-list { display: flex; flex-direction: column; gap: 32px; }
+.step { display: flex; gap: 18px; align-items: flex-start; }
+.step-num {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em;
+  color: var(--accent);
+  min-width: 28px; padding-top: 3px;
+}
+.step-body h3 { font-size: 1rem; font-weight: 700; margin-bottom: 5px; }
+.step-body p { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+.step-divider {
+  height: 1px; background: var(--border); margin: 0 0 0 46px;
+}
+.steps-img {
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+  width: 100%; object-fit: cover; aspect-ratio: 3/4;
+}
+
+/* ---- PHOTO BREAK ---- */
+.photo-break {
+  background: var(--bg2); padding: 64px 40px;
+}
+.photo-break img {
+  max-width: 1120px; width: 100%; margin: 0 auto;
+  border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  max-height: 480px; object-fit: cover;
+}
+
+/* ---- CTA ---- */
+.cta-box {
+  background: var(--accent); border-radius: 20px;
+  padding: 72px 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 40px; flex-wrap: wrap;
+  margin: 96px 0;
+}
+.cta-text h2 {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 800; letter-spacing: -0.03em;
+  color: #fff; margin-bottom: 8px;
+}
+.cta-text p { color: rgba(255,255,255,0.65); font-size: 0.95rem; }
+.btn-white {
+  background: #fff; color: var(--accent);
+  font-weight: 800; font-size: 0.95rem;
+  padding: 14px 28px; border-radius: 9px; white-space: nowrap;
+  transition: opacity .15s;
+}
+.btn-white:hover { opacity: 0.9; }
+.cta-note { color: rgba(255,255,255,0.45); font-size: 0.75rem; margin-top: 6px; text-align: right; }
+
+/* ---- FOOTER ---- */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 20px;
+  max-width: 1200px; margin: 0 auto;
+}
+.foot-left { display: flex; align-items: center; gap: 10px; }
+.foot-name { font-weight: 800; font-size: 0.95rem; letter-spacing: -0.01em; }
+.foot-tagline { font-size: 0.8rem; color: var(--muted); }
+.foot-links { display: flex; gap: 28px; }
+.foot-links a { font-size: 0.82rem; color: var(--muted); transition: color .15s; }
+.foot-links a:hover { color: var(--text); }
+.foot-copy { font-size: 0.78rem; color: var(--muted); }
+footer-divider { display: none; }
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; gap: 40px; padding: 72px 24px 60px; }
+  .hero-sub { max-width: 100%; }
+  .hero-right { justify-content: center; }
+  .hero-phone { width: 160px; }
+  .netting-grid { grid-template-columns: 1fr; gap: 40px; padding: 64px 0; }
+  .feat-header { grid-template-columns: 1fr; gap: 16px; }
+  .fgrid { grid-template-columns: 1fr 1fr; }
+  .steps-grid { grid-template-columns: 1fr; gap: 40px; }
+  .steps-img { display: none; }
+  .cta-box { padding: 48px 32px; flex-direction: column; align-items: flex-start; }
+  .cta-note { text-align: left; }
+  nav { padding: 0 20px; }
+  .wrap { padding: 0 24px; }
+  .photo-break { padding: 40px 24px; }
+  footer { padding: 32px 24px; flex-direction: column; align-items: flex-start; }
+  .foot-links { flex-wrap: wrap; gap: 16px; }
+  .strip { padding: 16px 24px; gap: 20px; }
+}
+@media (max-width: 600px) {
+  .fgrid { grid-template-columns: 1fr; }
+  h1 { font-size: 2.4rem; }
+  .hero-right { flex-direction: column; }
+  .hero-phone { width: 100%; max-width: 280px; margin: 0 auto; }
+  .hero-scene { width: 100%; aspect-ratio: 16/9; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-mark">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M3 4h10M3 7h10M3 10h6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="12" cy="10" r="2.5" fill="rgba(255,255,255,0.2)" stroke="#fff" stroke-width="1"/>
+        <path d="M11.1 10l.7.7 1.2-1.2" stroke="#fff" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    Nota Kita
+  </div>
+  <a href="app.html" class="nav-cta">Buka App</a>
+</nav>
+
+<!-- HERO -->
+<div class="wrap">
+  <section class="hero" style="padding-left:0;padding-right:0;">
+    <div class="hero-left">
+      <p class="hero-kicker"><span class="hero-kicker-dot"></span>Gratis selamanya</p>
+      <h1>Kasbon yang<br>tidak bisa<br>bohong.</h1>
+      <p class="hero-sub">
+        Catat hutang piutang antar warga secara digital.
+        Semua anggota pegang data yang sama.
+        Tidak bisa diedit sepihak.
+      </p>
+      <div class="hero-actions">
+        <a href="app.html" class="btn-primary">Mulai sekarang</a>
+        <a href="#cara-kerja" class="btn-outline">Cara kerja</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <img src="img/app_mockup_phone.png" alt="Aplikasi Nota Kita" class="hero-phone">
+      <img src="img/hero_community.png" alt="Warga menggunakan Nota Kita" class="hero-scene">
+    </div>
+  </section>
+</div>
+
+<!-- STRIP -->
+<div class="strip">
+  <div class="strip-item">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <circle cx="7" cy="7" r="6" stroke="#fff" stroke-width="1.3"/>
+      <path d="M4.5 7l2 2 3-3" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Offline-first
+  </div>
+  <div class="strip-item">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <rect x="1" y="3" width="12" height="8" rx="2" stroke="#fff" stroke-width="1.3"/>
+      <path d="M5 7h4M5 9h2" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    Tidak perlu server
+  </div>
+  <div class="strip-item">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M7 1l1.5 3.5L12 5l-2.5 2.5.6 3.5L7 9.5 3.9 11l.6-3.5L2 5l3.5-.5z" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/>
+    </svg>
+    Open Source
+  </div>
+  <div class="strip-item">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <rect x="4" y="1" width="6" height="8" rx="1.5" stroke="#fff" stroke-width="1.3"/>
+      <path d="M2 12h10" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/>
+    </svg>
+    Tanda tangan digital
+  </div>
+  <div class="strip-item">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M2 10l3-4 3 2 3-5 1 2" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Hapus silang otomatis
+  </div>
+</div>
+
+<!-- NETTING -->
+<div class="wrap">
+  <div class="netting-grid">
+    <div>
+      <p class="section-label">Fitur utama</p>
+      <h2 class="section-title">Utang saling silang?<br>Hapus otomatis.</h2>
+      <p class="section-body">
+        Kalau Budi hutang ke Sari, Sari hutang ke Ahmad, Ahmad hutang ke Budi
+        maka sistem deteksi lingkarannya dan hapus semua sekaligus.
+        Tidak satu rupiah berpindah.
+      </p>
+      <p class="section-body" style="margin-top:12px;">Teknik ini namanya multilateral netting. Dipakai bank sentral. Sekarang bisa dipakai RT.</p>
+      <div class="netting-card">
+        <div class="nc-row">
+          <span class="nc-name">Budi</span>
+          <svg width="20" height="10" viewBox="0 0 20 10" fill="none"><path d="M1 5h16M14 2l3 3-3 3" stroke="#dc2626" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="nc-amt">Rp 500.000</span>
+          <svg width="20" height="10" viewBox="0 0 20 10" fill="none"><path d="M1 5h16M14 2l3 3-3 3" stroke="#dc2626" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="nc-name">Sari</span>
+        </div>
+        <div class="nc-row">
+          <span class="nc-name">Sari</span>
+          <svg width="20" height="10" viewBox="0 0 20 10" fill="none"><path d="M1 5h16M14 2l3 3-3 3" stroke="#dc2626" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="nc-amt">Rp 500.000</span>
+          <svg width="20" height="10" viewBox="0 0 20 10" fill="none"><path d="M1 5h16M14 2l3 3-3 3" stroke="#dc2626" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="nc-name">Ahmad</span>
+        </div>
+        <div class="nc-row" style="margin-bottom:0;">
+          <span class="nc-name">Ahmad</span>
+          <svg width="20" height="10" viewBox="0 0 20 10" fill="none"><path d="M1 5h16M14 2l3 3-3 3" stroke="#dc2626" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="nc-amt">Rp 500.000</span>
+          <svg width="20" height="10" viewBox="0 0 20 10" fill="none"><path d="M1 5h16M14 2l3 3-3 3" stroke="#dc2626" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="nc-name">Budi</span>
+        </div>
+        <div class="nc-result">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="7" fill="var(--accent)" opacity="0.15"/>
+            <path d="M5 8l2.5 2.5L11 5.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Rp 1.500.000 terhapus. Nol rupiah berpindah.
+        </div>
+      </div>
+    </div>
+    <img src="img/netting_diagram.png" alt="Diagram hapus silang" class="netting-img">
+  </div>
+</div>
+
+<!-- FEATURES -->
+<div style="background:var(--bg2); padding: 96px 0;">
+  <div class="wrap">
+    <div class="feat-header">
+      <div>
+        <p class="section-label">Fitur</p>
+        <h2 class="section-title" style="margin-bottom:0;">Apa yang<br>bisa dilakukan</h2>
+      </div>
+      <p class="section-body">Bukan sekadar catatan hutang. Ini sistem kredit komunal yang lengkap untuk warga, petani, dan UMKM.</p>
+    </div>
+    <div class="fgrid">
+      <div class="fcell">
+        <div class="fcell-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="2" y="4" width="16" height="12" rx="2.5" stroke="var(--accent)" stroke-width="1.5"/>
+            <path d="M6 10h8M6 13h5" stroke="var(--accent)" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M14 7l1.5 1.5-1.5 1.5" stroke="var(--accent)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="fcell-title">Uang dan barang</div>
+        <div class="fcell-desc">Catat hutang Rupiah, USD, atau barang fisik: beras, pupuk, liter minyak. Tahan inflasi.</div>
+      </div>
+      <div class="fcell">
+        <div class="fcell-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="2" y="2" width="7" height="7" rx="1.5" stroke="var(--accent)" stroke-width="1.5"/>
+            <rect x="11" y="2" width="7" height="7" rx="1.5" stroke="var(--accent)" stroke-width="1.5"/>
+            <rect x="2" y="11" width="7" height="7" rx="1.5" stroke="var(--accent)" stroke-width="1.5"/>
+            <rect x="13" y="13" width="3" height="3" fill="var(--accent)"/>
+            <path d="M12 12h5v5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="fcell-title">Sync via QR dan WiFi</div>
+        <div class="fcell-desc">Tidak perlu internet. Scan QR atau nyambung WiFi lokal. HP ke HP langsung.</div>
+      </div>
+      <div class="fcell">
+        <div class="fcell-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="5" y="2" width="10" height="13" rx="2" stroke="var(--accent)" stroke-width="1.5"/>
+            <path d="M8 6h4M8 9h4M8 12h2" stroke="var(--accent)" stroke-width="1.3" stroke-linecap="round"/>
+            <circle cx="14" cy="16" r="3" stroke="var(--accent)" stroke-width="1.4"/>
+            <path d="M13 16l.8.8 1.4-1.4" stroke="var(--accent)" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="fcell-title">Tanda tangan digital</div>
+        <div class="fcell-desc">secp256k1 Schnorr. Nostr-compatible. Tidak bisa dipalsukan setelah dibuat.</div>
+      </div>
+      <div class="fcell">
+        <div class="fcell-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="2" y="3" width="16" height="14" rx="2" stroke="var(--accent)" stroke-width="1.5"/>
+            <path d="M6 8h8M6 11h8M6 14h5" stroke="var(--accent)" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="fcell-title">Buku besar transparan</div>
+        <div class="fcell-desc">Semua anggota lihat semua nota. Tidak ada yang bisa monopoli informasi.</div>
+      </div>
+      <div class="fcell">
+        <div class="fcell-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <polyline points="2,15 6,9 10,11 14,5 18,7" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="14" cy="5" r="2" fill="var(--accent)"/>
+          </svg>
+        </div>
+        <div class="fcell-title">Bunga sederhana dan majemuk</div>
+        <div class="fcell-desc">Set 0% atau X%. Simple atau compound. Kalkulasi otomatis, transparan ke semua pihak.</div>
+      </div>
+      <div class="fcell">
+        <div class="fcell-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M3 10h14" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M12 6l4 4-4 4" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="6" cy="10" r="2" stroke="var(--accent)" stroke-width="1.3"/>
+          </svg>
+        </div>
+        <div class="fcell-title">Oper nota</div>
+        <div class="fcell-desc">Piutang bisa dipindah ke pihak ketiga. Seperti wesel tagih tapi di HP.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<div class="wrap">
+  <section class="pad" id="cara-kerja">
+    <div class="steps-grid">
+      <div class="steps-list">
+        <div>
+          <p class="section-label">Cara kerja</p>
+          <h2 class="section-title" style="margin-bottom:4px;">Tiga langkah,<br>langsung jalan.</h2>
+          <p class="section-body" style="margin-bottom:36px;">Tidak perlu daftar, tidak perlu server, tidak perlu internet.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">01</span>
+          <div class="step-body">
+            <h3>Buat kelompok</h3>
+            <p>Masukkan nama dan nama kelompok. Identitas dibuat lokal di HP, tidak kirim data ke server manapun.</p>
+          </div>
+        </div>
+        <div class="step-divider"></div>
+        <div class="step">
+          <span class="step-num">02</span>
+          <div class="step-body">
+            <h3>Undang anggota via QR</h3>
+            <p>Tampilkan QR undangan. Anggota scan sekali, langsung masuk. Tidak perlu install apapun selain browser.</p>
+          </div>
+        </div>
+        <div class="step-divider"></div>
+        <div class="step">
+          <span class="step-num">03</span>
+          <div class="step-body">
+            <h3>Buat nota, scan, selesai</h3>
+            <p>Buat nota hutang, tampilkan QR. Debitur scan untuk konfirmasi. Tercatat di kedua HP, tidak bisa diubah.</p>
+          </div>
+        </div>
+      </div>
+      <img src="img/qr_scan_scene.png" alt="Scan QR nota" class="steps-img">
+    </div>
+  </section>
+</div>
+
+<!-- PHOTO BREAK -->
+<div class="photo-break">
+  <img src="img/farmer_community.png" alt="Kelompok tani memakai Nota Kita">
+</div>
+
+<!-- CTA -->
+<div class="wrap">
+  <div class="cta-box">
+    <div class="cta-text">
+      <h2>Coba sekarang.<br>Gratis selamanya.</h2>
+      <p>Berjalan di browser. Android dan iOS.</p>
+    </div>
+    <div>
+      <a href="app.html" class="btn-white">Buka Nota Kita</a>
+      <p class="cta-note">Data tersimpan di HP kamu sendiri</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="border-top:1px solid var(--border);">
+  <footer>
+    <div class="foot-left">
+      <div class="nav-mark" style="width:26px;height:26px;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 3.5h10M2 6h10M2 8.5h6" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="foot-name">Nota Kita</div>
+        <div class="foot-tagline">Kasbon digital untuk komunitas</div>
+      </div>
+    </div>
+    <div class="foot-links">
+      <a href="app.html">Aplikasi</a>
+      <a href="#cara-kerja">Cara kerja</a>
+      <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <span class="foot-copy">Open Source &middot; MIT &middot; 2025</span>
+  </footer>
+</div>
+
+</body>
+</html>
