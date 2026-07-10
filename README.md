@@ -1,10 +1,10 @@
-﻿# Nota Kita — P2P Mutual Credit Protocol
+﻿# Nota Kita  P2P Mutual Credit Protocol
 
 Kasbon digital untuk komunitas. Offline-first, tanpa server, tanpa bank.
 
 ## Apa ini
 
-Nota Kita adalah sistem utang-piutang terdesentralisasi untuk kelompok kecil (koperasi, arisan, komunitas tani, warung, dll). Tidak ada server pusat. Data tersimpan di device masing-masing anggota. Sinkronisasi via QR code, Wi-Fi lokal, atau file share — tidak perlu internet.
+Nota Kita adalah sistem utang-piutang terdesentralisasi untuk kelompok kecil (koperasi, arisan, komunitas tani, warung, dll). Tidak ada server pusat. Data tersimpan di device masing-masing anggota. Sinkronisasi via QR code, Wi-Fi lokal, atau file share  tidak perlu internet.
 
 Intinya: IOU digital yang bisa diverifikasi secara kriptografis tanpa pihak ketiga.
 
@@ -21,7 +21,7 @@ Nota bisa dipecah (endorse) ke anggota lain. Jika ada utang siklus (A→B→C→
 
 ## Stack
 
-Semua vanilla — tidak ada framework, tidak ada server, tidak ada cloud.
+Semua vanilla  tidak ada framework, tidak ada server, tidak ada cloud.
 
 | Layer | Tech |
 |-------|------|
@@ -56,7 +56,7 @@ js/
   ui/
     ui.js      # Toast, modal, format helpers
     render/    # Renderers per screen
-app.js         # Orchestrator — state + event handlers
+app.js         # Orchestrator  state + event handlers
 app.html       # Single HTML file, semua screen ada di sini
 sw.js          # Service Worker
 ```
@@ -76,22 +76,22 @@ Untuk install sebagai PWA: Chrome/Edge mobile → "Add to Home Screen".
 
 Tiga mode, tidak perlu internet kecuali mode pertama:
 
-1. **WebRTC** — otomatis via Nostr relay jika online
-2. **QR Fountain** — animasi QR sequence, cocok offline total
-3. **File share** — ekspor `.json`, kirim via WhatsApp/Bluetooth, import di device lain
+1. **WebRTC**  otomatis via Nostr relay jika online
+2. **QR Fountain**  animasi QR sequence, cocok offline total
+3. **File share**  ekspor `.json`, kirim via WhatsApp/Bluetooth, import di device lain
 
 ## Keamanan
 
 - Private key tidak pernah keluar dari device kecuali diekspor manual dengan password
 - Export dienkripsi AES-256-GCM, PBKDF2 100k iterasi
-- Semua nota diverifikasi signature sebelum disimpan — forgery langsung ditolak
+- Semua nota diverifikasi signature sebelum disimpan  forgery langsung ditolak
 - Passkey/WebAuthn PRF dipakai sebagai key derivation untuk enkripsi identitas
 
 ## Limitasi
 
 - Belum ada conflict resolution untuk simultaneous offline edit pada bill yang sama
 - Netting deduplication bisa miss beberapa cycle jika node set overlap (DFS suboptimal)
-- Tidak ada revocation — jika private key bocor, mitigasinya cuma reset + key baru
+- Tidak ada revocation  jika private key bocor, mitigasinya cuma reset + key baru
 
 ## License
 
